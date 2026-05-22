@@ -2,9 +2,10 @@
 Lectura de pulsos de caudalímetro. 476 pulsos por litro. 
 Envía datos a
 https://script.google.com/macros/s/AKfycbyNaTGCCJc9_HNSx5ZjbwB4H5bFlEE1KT-PmUTpUU1SNQbjhfcX-gKEQQUwgCmNliOq/exec
-Versión del firmware: 0.6 
+Versión del firmware: 1.0 
 Cambios en esta versión:
 cambi en la gestión del string post a google sheets.
+Escritura del volumen total en la memoria no volátil del ESP32 para mantener el historial aunque se reinicie el dispositivo.
 */
 
 #include <Arduino.h>
@@ -271,5 +272,36 @@ void enviarAGoogleSheets() {
   http.end();
 }
 
+void guardarVolumenEnFS() {
+  File f = LittleFS.open("/volumen.txt", "w");
+  if (f) {
+    f.print(volumenTotal_Litros, 3); // Guardamos con 3 decimales
+    f.close();
+    Serial.printf(">>> Volumen guardado en memoria no volátil: %.3f L\n", volumenTotal_Litros);
+  } else {
+    Serial.println("Error al abrir /volumen.txt para escribir.");
+  }
+}
 
+void cargarVolumenDesdeFS() {
+  if (LittleFS.exists("/volumen.txt")) {
+    File f = LittleFS.open("/volumen.txt", "r");
+    if (f) {
+      String contenido = f.readString();
+      contenido.trim();
+      float volumenGuardado = contenido.toFloat();
+      
+      // Restauramos tanto el volumen como los pulsos equivalentes en el historial
+      volumenTotal_Litros = volumenGuardado;
+      totalPulsosAcumulados = volumenTotal_Litros * PULSOS_POR_LITRO;
+      
+      Serial.printf(">>> Historial restaurado con éxito: %.3f L (%lu pulsos)\n", volumenTotal_Litros, totalPulsosAcumulados);
+      f.close();
+    } else {
+      Serial.println("Error al abrir /volumen.txt para leer.");
+    }
+  } else {
+    Serial.println("No hay historial de volumen previo. Empezando desde 0.000 L.");
+  }
+}
 // void blinkLED() {digitalWrite(ledPin, HIGH); delay(100); digitalWrite(ledPin, LOW); }
