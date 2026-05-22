@@ -21,7 +21,7 @@ Escritura del volumen total en la memoria no volátil del ESP32 para mantener el
 
 WiFiMulti wifiMulti; 
 
-const float VERSION_ACTUAL = 1.0;
+const float VERSION_ACTUAL = 0.8;
 
 const int ledPin = 2; // para el ESP32
 char scriptURL[256] = "";
