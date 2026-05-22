@@ -19,7 +19,7 @@ Versión del firmware: 0.1 subirá con nombre de archivo firmware.bin a main.
 
 WiFiMulti wifiMulti; 
 
-const float VERSION_ACTUAL = 0.1;
+const float VERSION_ACTUAL = 0.3;
 
 const int ledPin = 2; // para el ESP32
 char scriptURL[150] = "";
