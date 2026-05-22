@@ -2,8 +2,9 @@
 Lectura de pulsos de caudalímetro. 476 pulsos por litro. 
 Envía datos a
 https://script.google.com/macros/s/AKfycbyNaTGCCJc9_HNSx5ZjbwB4H5bFlEE1KT-PmUTpUU1SNQbjhfcX-gKEQQUwgCmNliOq/exec
-Versión del firmware: 0.1 subirá con nombre de archivo firmware.bin a main. 
-
+Versión del firmware: 0.4 
+Cambios en esta versión:
+cmbios en los humbrales de envío, ahora se envía cada vez que el caudal cambia más de 0.05 L/min o el volumen total cambia más de 0.01 L (10 ml). Esto reduce el número de envíos cuando el flujo es estable, pero sigue capturando cambios significativos.
 */
 
 #include <Arduino.h>
@@ -19,18 +20,18 @@ Versión del firmware: 0.1 subirá con nombre de archivo firmware.bin a main.
 
 WiFiMulti wifiMulti; 
 
-const float VERSION_ACTUAL = 0.3;
+const float VERSION_ACTUAL = 0.4;
 
 const int ledPin = 2; // para el ESP32
-char scriptURL[150] = "";
+char scriptURL[256] = "";
 bool shouldSaveConfig = false;
 bool primerLoop = true;
 unsigned long previousMillis = 0;
 const unsigned long interval = 120000; // aprox 2 minutos
 const unsigned long UPDATE_INTERVAL = 3600000;// aprox 1 hora
 
-const char* URL_VERSION = "https://raw.githubusercontent.com/luisfdezrm-stack/arduino/Caudal/version_actual";
-const char* URL_BINARIO = "https://raw.githubusercontent.com/luisfdezrm-stack/arduino/Caudal/firmware.bin";
+const char* URL_VERSION = "https://raw.githubusercontent.com/luisfdezrm-stack/Caudal/main/version_actual";
+const char* URL_BINARIO = "https://raw.githubusercontent.com/luisfdezrm-stack/Caudal/main/firmware.bin";
 
 const byte PIN_SENSOR = 18; 
 const float PULSOS_POR_LITRO = 476.0; 
@@ -44,8 +45,8 @@ float volumenTotal_Litros = 0.0;
 float  last_caudal = 0.0;
 float  last_volumen = 0.0;
 
-const float UMBRAL_CAUDAL = 0.5;   // Variación de 0.5 L/min
-const float UMBRAL_VOLUMEN = 0.1;  // Variación de 100 ml
+const float UMBRAL_CAUDAL = 0.05;   // Variación de 0.5 L/min
+const float UMBRAL_VOLUMEN = 0.01;  // Variación de 100 ml
 
 void IRAM_ATTR contarPulso() {contadorPulsos++;}
 void configurarSerial();
@@ -109,7 +110,7 @@ if (tiempoActual - tiempoAnterior >= INTERVALO) {
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
-    ejecutarCicloLectura();
+//    ejecutarCicloLectura();
     if (haCambiadoElDato()) {
       gestionarEnvioDatos();
       // Guardamos el estado actual como último enviado
@@ -134,7 +135,7 @@ void inicializarHardware() {
 }
 
 
-void ejecutarCicloLectura() { blinkLED();}
+// void ejecutarCicloLectura() { }
 
 
 
@@ -267,4 +268,4 @@ void enviarAGoogleSheets() {
 }
 
 
-void blinkLED() {digitalWrite(ledPin, HIGH); delay(100); digitalWrite(ledPin, LOW); }
+// void blinkLED() {digitalWrite(ledPin, HIGH); delay(100); digitalWrite(ledPin, LOW); }
