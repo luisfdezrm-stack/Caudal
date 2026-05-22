@@ -2,9 +2,9 @@
 Lectura de pulsos de caudalímetro. 476 pulsos por litro. 
 Envía datos a
 https://script.google.com/macros/s/AKfycbyNaTGCCJc9_HNSx5ZjbwB4H5bFlEE1KT-PmUTpUU1SNQbjhfcX-gKEQQUwgCmNliOq/exec
-Versión del firmware: 0.4 
+Versión del firmware: 0.6 
 Cambios en esta versión:
-cmbios en los humbrales de envío, ahora se envía cada vez que el caudal cambia más de 0.05 L/min o el volumen total cambia más de 0.01 L (10 ml). Esto reduce el número de envíos cuando el flujo es estable, pero sigue capturando cambios significativos.
+cambi en la gestión del string post a google sheets.
 */
 
 #include <Arduino.h>
@@ -20,7 +20,7 @@ cmbios en los humbrales de envío, ahora se envía cada vez que el caudal cambia
 
 WiFiMulti wifiMulti; 
 
-const float VERSION_ACTUAL = 0.4;
+const float VERSION_ACTUAL = 0.6;
 
 const int ledPin = 2; // para el ESP32
 char scriptURL[256] = "";
@@ -258,7 +258,11 @@ void enviarAGoogleSheets() {
   String postData = "caudal=" + String(caudal_LPM, 2) +
                     "&volumen=" + String(volumenTotal_Litros, 3) +
                     "&version=" + String(VERSION_ACTUAL, 2);
-  int httpCode = http.POST(postData);
+    Serial.print(">>> Enviando a Google: ");
+    Serial.print("postData = ");
+    Serial.println(postData);
+  int httpCode = http.POST((uint8_t*)postData.c_str(), postData.length());
+  // int httpCode = http.POST(postData);
   if (httpCode > 0) {
     Serial.println(">>> Datos enviados con éxito.");
     Serial.print("postData = ");
